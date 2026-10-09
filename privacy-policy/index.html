@@ -173,7 +173,7 @@
     <p>We may update this Privacy Policy from time to time. When we do, we will revise the "Last updated" date at the top of this page. We encourage you to review this policy periodically.</p>
 
     <h2>Contact Us</h2>
-    <p>If you have questions about this Privacy Policy or our handling of information, please reach us through our <a href="/contact/">contact page</a> or by email at <a href="mailto:info@eyetoad.com">info@eyetoad.com</a>.</p>
+    <p>If you have questions about this Privacy Policy or our handling of information, please reach us through our <a href="/contact/">contact page</a> or by email at <a class="eml" data-a="aW5mbw==" data-b="ZXlldG9hZC5jb20=" href="/contact/">email</a>.</p>
 
   </article>
 </div>
@@ -204,5 +204,33 @@
   </div>
 </footer>
 
+<script>
+/* Lead form + email plumbing: address assembled at runtime, FormSubmit AJAX */
+(function(){
+  var t0=Date.now();
+  function addr(el){return atob(el.getAttribute('data-a'))+String.fromCharCode(64)+atob(el.getAttribute('data-b'));}
+  var links=document.querySelectorAll('a.eml');
+  for(var k=0;k<links.length;k++){(function(a){var e=addr(a),s=a.getAttribute('data-s');a.href='mailto:'+e+(s?'?subject='+encodeURIComponent(s):'');if(!a.textContent.replace(/\s/g,''))a.textContent=e;})(links[k]);}
+  var forms=document.querySelectorAll('form.fs-lead');
+  for(var n=0;n<forms.length;n++){(function(f){
+    f.addEventListener('submit',function(ev){
+      ev.preventDefault();
+      var st=f.querySelector('.fs-status');
+      function say(m,ok){if(st){st.textContent=m;st.style.color=ok?'#1d6f4c':'#b13a22';}else{alert(m);}}
+      var hp=f.querySelector('[name="_honey"]');
+      if(hp&&hp.value){return;}
+      if(Date.now()-t0<3500){say('Give the form a moment, then send again.');return;}
+      var req=f.querySelectorAll('[required]');
+      for(var i=0;i<req.length;i++){var r=req[i];var empty=(r.type==='checkbox'||r.type==='radio')?!r.checked:!String(r.value||'').trim();if(empty){say('Please fill in the required fields.');try{r.focus();}catch(e){}return;}}
+      var btn=f.querySelector('[type="submit"]');if(btn)btn.disabled=true;
+      fetch('https://formsubmit.co/ajax/'+addr(f),{method:'POST',headers:{Accept:'application/json'},body:new FormData(f)})
+        .then(function(res){if(!res.ok)throw new Error('bad');return res.json();})
+        .then(function(j){if(j&&(j.success===false||j.success==='false'))throw new Error('bad');say("Sent. We'll get back to you shortly.",true);f.reset();})
+        .catch(function(){say('That did not go through. Please call 1-800-481-8638.');})
+        .then(function(){if(btn)btn.disabled=false;});
+    });
+  })(forms[n]);}
+})();
+</script>
 </body>
 </html>
